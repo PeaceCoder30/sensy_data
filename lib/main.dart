@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter_application_1/file_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
@@ -279,43 +278,25 @@ class _CameraScreenState extends State<CameraScreen> {
     final file = File(videoPath);
     return await file.readAsBytes(); // Read the file as a list of bytes
   }
-
-  void processVideo(String videoPath) async {
-    try {
-      // Get video bytes
-      Uint8List videoBytes = await getVideoBytes(videoPath);
-
-      // If you just need the bytes, you can use `videoBytes` directly
-      print("Video bytes length: ${videoBytes.length}");
-
-      FileStorage.writeCounter(
-          videoBytes.toString(), "${DateTime.now().millisecondsSinceEpoch}.mp4");
-    } catch (e) {
-      print("Error processing video: $e");
-    }
-  }
-
+  
   void _toggleRecording() async {
     if (_isRecording) {
       // Stop recording
-      final file1 = await _cameraController!.stopVideoRecording();
-      final path = file1.path;
-      processVideo(path);      
+      await _cameraController!.stopVideoRecording();
       _saveDataToCSV();
       setState(() {
         _isRecording = false;
       });
     } else {
       // Start recording
-      // final directory = await getExternalStorageDirectory();
-      // final videoPath =
-      //     '${directory!.path}/${DateTime.now().millisecondsSinceEpoch}.mp4';
-      // print("videoPath: $videoPath");
+      final directory = await getExternalStorageDirectory();
+      final videoPath =
+          '${directory!.path}/${DateTime.now().millisecondsSinceEpoch}.mp4';
       await _cameraController!.startVideoRecording();
 
       setState(() {
         _isRecording = true;
-        _videoPath = FileStorage.getExternalDocumentPath() as String?;
+        _videoPath = videoPath;
       });
     }
   }
